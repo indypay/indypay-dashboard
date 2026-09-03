@@ -1,0 +1,39 @@
+export enum USERS_ROLE {
+  GUEST = '0',
+  SALE = '1',
+  MERCHANT = '2',
+  CHANNEL_PARTNER = '3',
+  OPS = '4',
+  ADMIN = '5',
+  OWNER = '6',
+  VIEW_ONLY_ADMIN = '7',
+}
+
+export enum ACCOUNT_STATUS {
+  ACTIVE = 1,
+  INACTIVE = 2,
+  SUSPENDED = 3,
+  BLOCKED = 4,
+  DELETED = 5,
+  TEST_DELETED = 6,
+}
+
+export enum ONBOARDING_STATUS {
+  NOT_STARTED = 0,
+  SIGN_UP = 1,
+  KYC_PENDING = 2,
+  KYC_ON_HOLD = 3,
+  KYC_REJECTED = 4,
+  KYC_VERIFIED = 5,
+  FILLED_BUSINESS_DETAILS = 6,
+}
+
+export enum INVOICE_STATUS {
+  DRAFT = 1,
+  SENT = 2,
+  FAILED = 3,
+  VIEWED = 4,
+  PAID = 5,
+  OVERDUE = 6,
+  CANCELLED = 7,
+}

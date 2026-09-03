@@ -1,0 +1,1 @@
+export { PaymentProductBanner } from './PaymentProductBanner';

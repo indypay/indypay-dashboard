@@ -1,0 +1,11 @@
+# #!/bin/sh
+
+# echo "Running lint-staged..."
+# npx lint-staged
+
+# if [ $? -eq 0 ]; then
+#   echo "✅ All checks passed! You can proceed with the commit."
+# else
+#   echo "❌ Some checks failed. Please fix the issues and try committing again."
+#   exit 1
+# # fi 

@@ -1,0 +1,513 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Tenant CSS custom properties (defaults = RupeeFlow green theme) ──────
+   TenantContext.tsx overwrites these on :root whenever the tenant changes.
+   Use var(--primary) etc. in any component for instant brand theming.
+   ───────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Core brand */
+  --primary:    #00875A;
+  --secondary:  #006B4F;
+  --accent:     #2AB871;
+
+  /* Surfaces */
+  --background: #F4F8F6;
+  --surface:    #FFFFFF;
+
+  /* Text */
+  --text:       #3D5C4A;
+  --text-muted: #6B8A78;
+
+  /* Borders */
+  --border:     #D0E8DA;
+
+  /* Sidebar tokens (overridden per-tenant by TenantContext) */
+  --sidebar-hover-bg:          rgba(0, 135, 90, 0.06);
+  --sidebar-active-bg:         #E8F5EF;
+  --sidebar-active-border:     #B8DACC;
+  --sidebar-active-text:       #006B4F;
+  --sidebar-submenu-bg:        #F7FBF9;
+  --sidebar-submenu-border:    rgba(0, 135, 90, 0.12);
+  --sidebar-submenu-connector: rgba(0, 135, 90, 0.2);
+  --sidebar-icon-color:        #5A7A6A;
+  --sidebar-item-selected:     #E0F2EA;
+
+  /* CTA gradient */
+  --cta-gradient: linear-gradient(to right, #006B4F, #00875A);
+}
+
+/* ─── Global tenant-aware overrides ────────────────────────────────────────
+   These override Tailwind-compiled static classes so the entire dashboard
+   reacts to CSS variable changes injected by TenantContext.
+   ─────────────────────────────────────────────────────────────────────── */
+
+/* Sidebar & cards */
+.sidebar-container,
+.bg-surface-dark {
+  background-color: var(--surface) !important;
+}
+
+/* Page / panel backgrounds */
+.bg-surface-dark-deep {
+  background-color: var(--background) !important;
+}
+
+/* All border-border-light usages */
+.border-border-light {
+  border-color: var(--border) !important;
+}
+
+/* Section heading text in sidebar */
+.text-primary-mint\/60,
+[class*="text-primary-mint"] {
+  color: var(--primary) !important;
+  opacity: 0.7;
+}
+
+/* Ant Design spinner colors follow the active tenant primary */
+.ant-spin-dot-item {
+  background-color: var(--primary) !important;
+}
+.ant-spin-dot  { color: var(--primary) !important; }
+.ant-spin-text { color: var(--primary) !important; }
+
+/* Gradient border utility (sidebar KYC banner etc.) */
+.border-gradient-bright::before {
+  background: var(--cta-gradient) !important;
+}
+
+/* global.css or component-specific CSS */
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+/* Gradient border utilities */
+.border-gradient-bright {
+  position: relative;
+  @apply bg-surface-dark;
+  background-clip: padding-box;
+  border: 1px solid transparent;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    margin: -1px;
+    border-radius: inherit;
+    background: linear-gradient(to right, #006B4F, #00875A);
+  }
+}
+
+/*  */
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: 'Open Sans';
+  background-color: #FFFFFF !important;
+  min-height: 100vh;
+}
+
+nav {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+nav a {
+  text-decoration: none;
+}
+
+/* Custom styles for the button */
+.custom-button {
+  background: none !important; /* Make sure to use !important to override default styles */
+  border: none; /* Remove border if necessary */
+  color: inherit; /* Inherit text color from parent */
+  padding: 0; /* Adjust padding if needed */
+  /* Add any other custom styles here */
+}
+
+/* Adjust the styles for Popover */
+.popover-content {
+  /* Your custom styles for Popover content */
+}
+
+/* Checkout (payment-link) light theme overrides for Select/inputs */
+.checkout-light-inputs {
+  .ant-select-selector {
+    background: #fff !important;
+    border-color: #e5e7eb !important;
+    color: #111827 !important;
+    border-radius: 10px !important;
+  }
+  .ant-select-selection-placeholder,
+  .ant-select-selection-item {
+    color: #111827 !important;
+  }
+  .ant-input {
+    background: #fff !important;
+    border-color: #e5e7eb !important;
+    color: #111827 !important;
+    &::placeholder {
+      color: #9ca3af !important;
+    }
+  }
+}
+
+.bg-effect {
+  @apply absolute inset-0 h-full w-full;
+
+  &::before {
+    @apply absolute inset-0 bg-gradient-to-b from-transparent to-primary-100;
+    content: '';
+    clip-path: polygon(0 0, 100% 0, 100% 30%, 0 80%);
+  }
+
+  .first {
+    @apply absolute top-[5%] left-[25%] h-[300px] w-[300px] bg-gradient-to-b from-secondary-50 to-transparent;
+    clip-path: circle(50% at 50% 50%);
+    animation: leftRight 3s ease-in-out infinite alternate;
+  }
+
+  .second {
+    @apply absolute bottom-[5%] right-[25%] h-[300px] w-[300px] bg-gradient-to-l from-primary-50 to-transparent shadow-md;
+    clip-path: circle(50% at 50% 50%);
+    animation: topBottom 3s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes leftRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(30px);
+  }
+}
+
+@keyframes topBottom {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(30px);
+  }
+}
+
+.or-line {
+  position: relative;
+  height: 1px;
+  @apply bg-muted;
+  margin-left: auto;
+  margin-right: auto;
+  width: 80%;
+}
+
+.or-line::before {
+  content: 'OR';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 0 10px; /* Add padding to create space around "OR" */
+  @apply bg-surface-dark;
+  z-index: 1;
+}
+
+.om-otp-input {
+  .otp-container {
+    @media (min-width: 640px) {
+      // sm breakpoint
+      justify-content: flex-start;
+    }
+  }
+  .reg-otp-input {
+    @media (min-width: 640px) {
+      // sm breakpoint
+      width: 2.5rem; // 10px
+      height: 2.5rem; // 10px
+    }
+  }
+}
+
+.login-with-google-btn {
+  transition:
+    background-color 0.3s,
+    box-shadow 0.3s;
+
+  padding: 12px 16px 12px 42px;
+  border: none;
+  border-radius: 3px;
+  box-shadow:
+    0 -1px 0 rgba(0, 0, 0, 0.04),
+    0 1px 1px rgba(0, 0, 0, 0.25);
+
+  @apply text-muted;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+
+  background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4=);
+  background-color: white;
+  background-repeat: no-repeat;
+  background-position: 12px 11px;
+
+  &:hover {
+    box-shadow:
+      0 -1px 0 rgba(0, 0, 0, 0.04),
+      0 2px 4px rgba(0, 0, 0, 0.25);
+  }
+
+  &:active {
+    background-color: #eeeeee;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow:
+      0 -1px 0 rgba(0, 0, 0, 0.04),
+      0 2px 4px rgba(0, 0, 0, 0.25),
+      0 0 0 3px #c8dafc;
+  }
+
+  &:disabled {
+    filter: grayscale(100%);
+    background-color: #ebebeb;
+    box-shadow:
+      0 -1px 0 rgba(0, 0, 0, 0.04),
+      0 1px 1px rgba(0, 0, 0, 0.25);
+    cursor: not-allowed;
+  }
+}
+.login-with-microsoft-btn {
+  transition:
+    background-color 0.3s,
+    box-shadow 0.3s;
+
+  padding: 12px 16px 12px 42px;
+  border: none;
+  border-radius: 3px;
+  box-shadow:
+    0 -1px 0 rgba(0, 0, 0, 0.04),
+    0 1px 1px rgba(0, 0, 0, 0.25);
+
+  @apply text-muted;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+
+  background-image: url(https://s3-eu-west-1.amazonaws.com/cdn-testing.web.bas.ac.uk/scratch/bas-style-kit/ms-pictogram/ms-pictogram.svg);
+  background-color: white;
+  background-repeat: no-repeat;
+  background-position: 12px 11px;
+
+  &:hover {
+    box-shadow:
+      0 -1px 0 rgba(0, 0, 0, 0.04),
+      0 2px 4px rgba(0, 0, 0, 0.25);
+  }
+
+  &:active {
+    background-color: #eeeeee;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow:
+      0 -1px 0 rgba(0, 0, 0, 0.04),
+      0 2px 4px rgba(0, 0, 0, 0.25),
+      0 0 0 3px #c8dafc;
+  }
+
+  &:disabled {
+    filter: grayscale(100%);
+    background-color: #ebebeb;
+    box-shadow:
+      0 -1px 0 rgba(0, 0, 0, 0.04),
+      0 1px 1px rgba(0, 0, 0, 0.25);
+    cursor: not-allowed;
+  }
+}
+
+.merchant-info-container {
+  // width: 200px;
+  // height: 50px;
+  box-shadow:
+    0 26px 58px 0 rgba(0, 0, 0, 0.22),
+    0 5px 14px 0 rgba(0, 0, 0, 0.18);
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Ant Design spinner — colours driven by CSS var set in TenantContext */
+.ant-spin-container { color: var(--primary) !important; }
+.ant-btn-loading .ant-btn-loading-icon .anticon     { color: var(--primary) !important; }
+.ant-btn-loading .ant-btn-loading-icon .anticon svg { color: var(--primary) !important; }
+
+/* Sidebar Menu Custom Styles — all colours driven by CSS variables */
+.sidebar-menu {
+  &.ant-menu {
+    background: transparent !important;
+    border: none !important;
+    color: var(--sidebar-icon-color) !important;
+    font-size: 16px !important;
+
+    .ant-menu-item,
+    .ant-menu-submenu-title {
+      border-radius: 12px !important;
+      margin: 6px 8px !important;
+      padding: 14px 16px !important;
+      height: auto !important;
+      line-height: 1.5 !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      color: var(--sidebar-icon-color) !important;
+      border: 1px solid transparent !important;
+      font-weight: 400 !important;
+
+      &::after {
+        display: none !important;
+      }
+
+      .ant-menu-item-icon,
+      .ant-menu-submenu-arrow {
+        color: var(--sidebar-icon-color) !important;
+        font-size: 22px !important;
+        margin-right: 16px !important;
+      }
+
+      .ant-menu-title-content {
+        font-size: 16px !important;
+        font-weight: 400 !important;
+      }
+    }
+
+    /* Hover */
+    .ant-menu-item:hover,
+    .ant-menu-submenu-title:hover {
+      background: var(--sidebar-hover-bg) !important;
+      color: var(--sidebar-active-text) !important;
+
+      .ant-menu-item-icon,
+      .ant-menu-submenu-arrow {
+        color: var(--sidebar-active-text) !important;
+      }
+    }
+
+    /* Active / selected main item */
+    .ant-menu-item-selected {
+      background: var(--sidebar-active-bg) !important;
+      color: var(--sidebar-active-text) !important;
+      border: 1px solid var(--sidebar-active-border) !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+
+      .ant-menu-item-icon {
+        color: var(--primary) !important;
+      }
+    }
+
+    .ant-menu-submenu-selected > .ant-menu-submenu-title {
+      background: transparent !important;
+      color: var(--sidebar-active-text) !important;
+
+      .ant-menu-item-icon,
+      .ant-menu-submenu-arrow {
+        color: var(--primary) !important;
+      }
+    }
+
+    /* Submenu container */
+    .ant-menu-sub {
+      background: var(--sidebar-submenu-bg) !important;
+      border-radius: 16px !important;
+      padding: 8px !important;
+      margin-left: 40px !important;
+      margin-top: 4px !important;
+      margin-bottom: 8px !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
+      border: 1px solid var(--sidebar-submenu-border) !important;
+      backdrop-filter: blur(8px) !important;
+      position: relative !important;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: -24px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, var(--sidebar-submenu-connector), transparent);
+      }
+    }
+
+    /* Submenu items */
+    .ant-menu-sub .ant-menu-item {
+      border-radius: 10px !important;
+      margin: 4px 0 !important;
+      padding: 10px 16px !important;
+      color: var(--sidebar-icon-color) !important;
+      position: relative !important;
+      font-size: 15px !important;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: -20px;
+        top: 50%;
+        width: 20px;
+        height: 2px;
+        background: var(--sidebar-submenu-connector);
+      }
+
+      &:hover {
+        background: var(--sidebar-hover-bg) !important;
+        color: var(--sidebar-active-text) !important;
+      }
+    }
+
+    /* Active submenu item */
+    .ant-menu-sub .ant-menu-item-selected {
+      background: var(--sidebar-item-selected) !important;
+      border: 1px solid var(--sidebar-active-border) !important;
+      color: var(--sidebar-active-text) !important;
+      font-weight: 500 !important;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
+    }
+
+    /* Submenu arrow */
+    .ant-menu-submenu-arrow {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      right: 16px !important;
+    }
+
+    .ant-menu-submenu-open > .ant-menu-submenu-title .ant-menu-submenu-arrow {
+      transform: rotate(180deg) !important;
+    }
+
+    /* Collapsed mode */
+    &.ant-menu-inline-collapsed {
+      .ant-menu-item,
+      .ant-menu-submenu-title {
+        padding: 14px 16px !important;
+        text-align: center !important;
+      }
+
+      .ant-menu-item-icon {
+        margin-right: 0 !important;
+        font-size: 24px !important;
+      }
+    }
+  }
+}

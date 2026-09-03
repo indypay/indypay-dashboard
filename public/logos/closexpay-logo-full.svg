@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="36" viewBox="0 0 160 36">
+  <circle cx="16" cy="18" r="12" fill="#E53935"/>
+  <text x="11" y="23" font-family="Arial,sans-serif" font-size="16" font-weight="900" fill="#FFF">X</text>
+  <text x="34" y="26" font-family="'Segoe UI',Arial,sans-serif" font-size="20" font-weight="700" fill="#4A1515">CloseX</text>
+  <text x="103" y="26" font-family="'Segoe UI',Arial,sans-serif" font-size="20" font-weight="700" fill="#E53935">Pay</text>
+</svg>

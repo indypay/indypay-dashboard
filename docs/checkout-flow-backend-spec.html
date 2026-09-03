@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RupeeFlow — Checkout & Payment Link API Specification</title>
+  <style>
+    /* ── RESET & BASE ──────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 13px;
+      line-height: 1.65;
+      color: #1a2e22;
+      background: #fff;
+    }
+    a { color: #00875A; }
+    strong { font-weight: 600; }
+
+    /* ── LAYOUT ───────────────────────────────────────────── */
+    .page-wrapper { max-width: 960px; margin: 0 auto; padding: 0 32px 64px; }
+
+    /* ── COVER PAGE ───────────────────────────────────────── */
+    .cover {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 80px 60px;
+      background: linear-gradient(135deg, #006B4F 0%, #004D38 100%);
+      color: #fff;
+      page-break-after: always;
+    }
+    .cover .logo {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 64px;
+    }
+    .cover .logo span { color: #4ade80; }
+    .cover h1 {
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      max-width: 640px;
+    }
+    .cover .subtitle {
+      font-size: 18px;
+      opacity: 0.80;
+      margin-bottom: 56px;
+      max-width: 500px;
+    }
+    .cover .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      width: 100%;
+      max-width: 600px;
+    }
+    .cover .meta-item {
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.20);
+      border-radius: 10px;
+      padding: 16px 20px;
+    }
+    .cover .meta-item label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.65;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .cover .meta-item value {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* ── TABLE OF CONTENTS ────────────────────────────────── */
+    .toc {
+      padding: 60px 0 40px;
+      page-break-after: always;
+    }
+    .toc h2 { font-size: 26px; font-weight: 700; margin-bottom: 28px; color: #006B4F; }
+    .toc ol { list-style: none; counter-reset: toc-counter; }
+    .toc > ol > li { counter-increment: toc-counter; margin-bottom: 8px; }
+    .toc > ol > li::before {
+      content: counter(toc-counter) ".";
+      font-weight: 700;
+      color: #00875A;
+      margin-right: 10px;
+    }
+    .toc a { text-decoration: none; color: #1a2e22; font-weight: 500; }
+    .toc a:hover { color: #00875A; }
+    .toc .toc-chapter { font-size: 15px; font-weight: 600; }
+    .toc .toc-page { float: right; color: #6B8A78; font-size: 12px; }
+
+    /* ── SECTION HEADERS ──────────────────────────────────── */
+    .section {
+      padding-top: 48px;
+      page-break-inside: avoid;
+    }
+    .section-break { page-break-after: always; }
+
+    h2.section-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #006B4F;
+      border-bottom: 3px solid #00875A;
+      padding-bottom: 10px;
+      margin-bottom: 28px;
+    }
+    h3.sub-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1a2e22;
+      margin: 28px 0 12px;
+    }
+    h4.sub-sub-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #3D5C4A;
+      margin: 20px 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    p { margin-bottom: 10px; color: #2d4a38; }
+
+    /* ── CARDS ────────────────────────────────────────────── */
+    .card {
+      background: #F4F8F6;
+      border: 1px solid #D0E8DA;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .card.green-border { border-left: 4px solid #00875A; }
+    .card.orange-border { border-left: 4px solid #F59E0B; }
+    .card.red-border { border-left: 4px solid #EF4444; }
+    .card.blue-border { border-left: 4px solid #3B82F6; }
+
+    /* ── BADGES / PILLS ───────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .badge.get    { background: #DCFCE7; color: #15803D; }
+    .badge.post   { background: #DBEAFE; color: #1D4ED8; }
+    .badge.put    { background: #FEF9C3; color: #92400E; }
+    .badge.patch  { background: #F3E8FF; color: #7E22CE; }
+    .badge.delete { background: #FEE2E2; color: #B91C1C; }
+    .badge.req    { background: #FEE2E2; color: #B91C1C; }
+    .badge.opt    { background: #F3F4F6; color: #6B7280; }
+    .badge.auth   { background: #FEF3C7; color: #92400E; }
+
+    /* ── CODE BLOCKS ──────────────────────────────────────── */
+    pre, code {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 11.5px;
+    }
+    pre {
+      background: #0F1E16;
+      color: #A8D5B9;
+      padding: 18px 22px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 12px 0 18px;
+      line-height: 1.7;
+    }
+    pre .key    { color: #7DD3FC; }
+    pre .string { color: #86EFAC; }
+    pre .number { color: #FCD34D; }
+    pre .bool   { color: #F9A8D4; }
+    pre .comment{ color: #6B8A78; font-style: italic; }
+    code {
+      background: #E8F5EF;
+      color: #00875A;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    /* ── TABLES ───────────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 24px;
+      font-size: 12px;
+    }
+    thead tr { background: #006B4F; color: #fff; }
+    thead th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    tbody tr:nth-child(even) { background: #F4F8F6; }
+    tbody tr:hover { background: #EAF4EE; }
+    tbody td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #D0E8DA;
+      vertical-align: top;
+    }
+    tbody td:first-child { font-weight: 600; color: #006B4F; }
+
+    /* ── ENDPOINT BLOCKS ──────────────────────────────────── */
+    .endpoint {
+      background: #fff;
+      border: 1.5px solid #D0E8DA;
+      border-radius: 10px;
+      margin-bottom: 28px;
+      overflow: hidden;
+      page-break-inside: avoid;
+    }
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      background: #F4F8F6;
+      border-bottom: 1px solid #D0E8DA;
+    }
+    .endpoint-header .url {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a2e22;
+    }
+    .endpoint-body { padding: 16px 20px; }
+    .endpoint-body p { margin-bottom: 6px; font-size: 12px; }
+
+    /* ── FLOW DIAGRAMS ────────────────────────────────────── */
+    .flow {
+      background: #F4F8F6;
+      border: 1px solid #D0E8DA;
+      border-radius: 10px;
+      padding: 24px 28px;
+      margin: 16px 0 24px;
+    }
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .flow-step:last-child { margin-bottom: 0; }
+    .flow-step .step-num {
+      min-width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #00875A;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+    .flow-step .step-content { flex: 1; }
+    .flow-step .step-content strong { font-size: 13px; display: block; }
+    .flow-step .step-content span { font-size: 12px; color: #6B8A78; }
+    .flow-connector {
+      margin-left: 14px;
+      margin-bottom: 4px;
+      color: #00875A;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    /* ── INFO BOXES ───────────────────────────────────────── */
+    .info-box {
+      display: flex;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 8px;
+      margin: 12px 0;
+    }
+    .info-box.note  { background: #EFF6FF; border-left: 3px solid #3B82F6; }
+    .info-box.warn  { background: #FFFBEB; border-left: 3px solid #F59E0B; }
+    .info-box.crit  { background: #FFF1F2; border-left: 3px solid #F43F5E; }
+    .info-box.good  { background: #F0FDF4; border-left: 3px solid #22C55E; }
+    .info-box .icon { font-size: 16px; margin-top: 1px; }
+    .info-box .text { font-size: 12px; color: #1a2e22; }
+    .info-box .text strong { display: block; margin-bottom: 2px; font-size: 12px; }
+
+    /* ── TWO-COLUMN GRID ──────────────────────────────────── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 12px 0; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 12px 0; }
+
+    /* ── STATUS CODES TABLE ───────────────────────────────── */
+    .status-grid {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 4px 16px;
+      margin: 8px 0;
+      font-size: 12px;
+    }
+    .status-grid .code { font-family: monospace; font-weight: 700; }
+    .status-grid .code.ok  { color: #16A34A; }
+    .status-grid .code.err { color: #DC2626; }
+
+    /* ── PRINT ────────────────────────────────────────────── */
+    @media print {
+      body { font-size: 12px; }
+      .cover { min-height: unset; padding: 60px 40px; }
+      pre { font-size: 10.5px; }
+      table { font-size: 11px; }
+      .endpoint { page-break-inside: avoid; }
+    }
+
+    /* ── DIVIDER ──────────────────────────────────────────── */
+    hr { border: none; border-top: 1px solid #D0E8DA; margin: 24px 0; }
+
+    /* ── TAG STRIP ────────────────────────────────────────── */
+    .tag-strip { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+    .tag {
+      background: #E8F5EF;
+      border: 1px solid #A7D7BA;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #00875A;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     COVER PAGE
+══════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="logo">Rupee<span>Flow</span></div>
+  <h1>Checkout &amp; Payment Link<br>Backend API Specification</h1>
+  <p class="subtitle">
+    Full technical reference for all APIs required to power the Payment Link
+    creation, management, and customer checkout experience.
+  </p>
+  <div class="meta-grid">
+    <div class="meta-item">
+      <label>Prepared By</label>
+      <value>RupeeFlow UI Team</value>
+    </div>
+    <div class="meta-item">
+      <label>Version</label>
+      <value>v1.0.0</value>
+    </div>
+    <div class="meta-item">
+      <label>Date</label>
+      <value>March 2026</value>
+    </div>
+    <div class="meta-item">
+      <label>Audience</label>
+      <value>Backend Engineers</value>
+    </div>
+    <div class="meta-item">
+      <label>Product</label>
+      <value>Payment Links</value>
+    </div>
+    <div class="meta-item">
+      <label>Status</label>
+      <value>For Review</value>
+    </div>
+  </div>
+</div>
+
+<div class="page-wrapper">
+
+<!-- ══════════════════════════════════════════════════════════
+     TABLE OF CONTENTS
+══════════════════════════════════════════════════════════ -->
+<div class="toc section-break">
+  <h2>Table of Contents</h2>
+  <ol>
+    <li><a href="#overview" class="toc-chapter">System Overview &amp; Architecture</a></li>
+    <li><a href="#data-models" class="toc-chapter">Core Data Models &amp; Enums</a></li>
+    <li><a href="#auth" class="toc-chapter">Authentication &amp; Authorization</a></li>
+    <li><a href="#merchant-apis" class="toc-chapter">Merchant APIs — Payment Link Management</a></li>
+    <li><a href="#checkout-apis" class="toc-chapter">Customer Checkout APIs</a></li>
+    <li><a href="#payment-apis" class="toc-chapter">Payment Initiation APIs</a></li>
+    <li><a href="#analytics-apis" class="toc-chapter">Analytics &amp; Reminder APIs</a></li>
+    <li><a href="#webhooks" class="toc-chapter">Webhooks &amp; Callbacks</a></li>
+    <li><a href="#encryption" class="toc-chapter">Encryption &amp; Security</a></li>
+    <li><a href="#error-codes" class="toc-chapter">Error Codes &amp; Standard Responses</a></li>
+    <li><a href="#flows" class="toc-chapter">Complete Flow Walkthroughs</a></li>
+    <li><a href="#enhancements" class="toc-chapter">Suggested Enhancements</a></li>
+  </ol>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     1. OVERVIEW
+══════════════════════════════════════════════════════════ -->
+<div class="section section-break" id="overview">
+  <h2 class="section-title">1. System Overview &amp; Architecture</h2>
+
+  <p>
+    RupeeFlow's <strong>Payment Links</strong> feature lets merchants generate shareable, time-limited
+    payment links that customers can open to complete a payment through QR, UPI, Card, or Net Banking.
+  </p>
+
+  <div class="grid-2" style="margin-top:20px;">
+    <div class="card green-border">
+      <h4 class="sub-sub-title">Merchant (Dashboard) Path</h4>
+      <p>Authenticated merchant creates a link, views analytics, sends reminders.</p>
+      <p>Routes: <code>/dashboard/payment-links</code>, <code>/dashboard/payment-button</code></p>
+    </div>
+    <div class="card blue-border">
+      <h4 class="sub-sub-title">Customer (Checkout) Path</h4>
+      <p>Unauthenticated customer opens link URL, selects payment method, completes payment.</p>
+      <p>Route: <code>/payment-link/[linkId]</code></p>
+    </div>
+  </div>
+
+  <h3 class="sub-title">Base URL Convention</h3>
+  <pre>https://api.rupeeflow.com/v1</pre>
+
+  <h3 class="sub-title">URL Routing</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Frontend URL</th>
+        <th>Description</th>
+        <th>Auth Required</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>/dashboard/payment-links</td><td>Merchant: list, create, manage links</td><td>Yes (JWT)</td></tr>
+      <tr><td>/dashboard/payment-button</td><td>Merchant: create links + hero/analytics</td><td>Yes (JWT)</td></tr>
+      <tr><td>/payment-link/[linkId]</td><td>Customer: checkout page</td><td>No</td></tr>
+      <tr><td>/checkout/[id]</td><td>Legacy checkout (being phased out)</td><td>No</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-title">Technology Stack (Frontend — context)</h3>
+  <div class="tag-strip">
+    <span class="tag">Next.js 14 App Router</span>
+    <span class="tag">TypeScript</span>
+    <span class="tag">React Query</span>
+    <span class="tag">Axios</span>
+    <span class="tag">Ant Design</span>
+    <span class="tag">AES-256-GCM Encryption</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     2. DATA MODELS
+══════════════════════════════════════════════════════════ -->
+<div class="section section-break" id="data-models">
+  <h2 class="section-title">2. Core Data Models &amp; Enums</h2>
+
+  <h3 class="sub-title">2.1 PaymentLink Object</h3>
+  <p>The central resource returned by GET endpoints and stored in the database.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Type</th>
+        <th>Required</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>id</td><td>string (UUID)</td><td><span class="badge req">Required</span></td><td>Unique link identifier</td></tr>
+      <tr><td>amount</td><td>number (decimal)</td><td><span class="badge req">Required</span></td><td>Total payable amount in INR</td></tr>
+      <tr><td>name</td><td>string</td><td><span class="badge opt">Optional</span></td><td>Pre-filled customer name</td></tr>
+      <tr><td>email</td><td>string</td><td><span class="badge req">Required</span></td><td>Customer email — used for notifications</td></tr>
+      <tr><td>mobile</td><td>string</td><td><span class="badge req">Required</span></td><td>10-digit Indian mobile number</td></tr>
+      <tr><td>description</td><td>string</td><td><span class="badge opt">Optional</span></td><td>Order note / invoice detail</td></tr>
+      <tr><td>status</td><td>enum</td><td><span class="badge req">Required</span></td><td>See Status Enum below</td></tr>
+      <tr><td>expiresAt</td><td>ISO 8601 datetime</td><td><span class="badge req">Required</span></td><td>When the link becomes invalid</td></tr>
+      <tr><td>allowPartialPayment</td><td>boolean</td><td><span class="badge opt">Optional</span></td><td>Enables customer to pay less than total</td></tr>
+      <tr><td>minimumAmount</td><td>number</td><td><span class="badge opt">Optional</span></td><td>Min partial payment amount (if partial enabled)</td></tr>
+      <tr><td>thankYouMessage</td><td>string (max 200)</td><td><span class="badge opt">Optional</span></td><td>Shown to customer on success screen</td></tr>
+      <tr><td>notifyEmail</td><td>boolean</td><td><span class="badge opt">Optional</span></td><td>Send email notification to customer on creation</td></tr>
+      <tr><td>notifyNumber</td><td>boolean</td><td><span class="badge opt">Optional</span></td><td>Send SMS notification to customer on creation</td></tr>
+      <tr><td>orderId</td><td>string</td><td><span class="badge opt">Optional</span></td><td>Merchant internal order reference</td></tr>
+      <tr><td>txnRefId</td><td>string</td><td><span class="badge opt">Optional</span></td><td>Transaction reference ID (set after payment)</td></tr>
+      <tr><td>intent</td><td>string</td><td><span class="badge opt">Optional</span></td><td>UPI intent string (set during UPI payment)</td></tr>
+      <tr><td>createdAt</td><td>ISO 8601 datetime</td><td><span class="badge req">Required</span></td><td>Creation timestamp</td></tr>
+      <tr><td>updatedAt</td><td>ISO 8601 datetime</td><td><span class="badge req">Required</span></td><td>Last updated timestamp</td></tr>
+      <tr><td>user</td><td>object</td><td><span class="badge opt">Optional</span></td><td>Merchant info <code>{ id, fullName }</code></td></tr>
+      <tr><td>linkUrl</td><td>string</td><td><span class="badge req">Required</span></td><td>Full shareable URL for the customer</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-title">2.2 Payment Link Status Enum</h3>
+  <table>
+    <thead>
+      <tr><th>Status</th><th>Meaning</th><th>Frontend Behavior</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>pending</td><td>Created, awaiting payment</td><td>Show checkout UI</td></tr>
+      <tr><td>processing</td><td>Payment initiated, awaiting confirmation</td><td>Show spinner</td></tr>
+      <tr><td>success</td><td>Payment completed successfully</td><td>Show "Already Paid" or success screen</td></tr>
+      <tr><td>paid</td><td>Alias for success (legacy support)</td><td>Show "Already Paid" screen</td></tr>
+      <tr><td>failed</td><td>Payment attempt failed</td><td>Allow retry or show error</td></tr>
+      <tr><td>expired</td><td>Link past expiry time</td><td>Show "Link Expired" screen</td></tr>
+      <tr><td>cancelled</td><td>Merchant cancelled the link</td><td>Show error screen</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-title">2.3 Payment Method Enum</h3>
+  <table>
+    <thead>
+      <tr><th>Value</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>qr</td><td>QR code scan (generates UPI QR)</td></tr>
+      <tr><td>upi</td><td>UPI ID / VPA direct pay</td></tr>
+      <tr><td>card</td><td>Credit / Debit Card</td></tr>
+      <tr><td>netbanking</td><td>Net Banking via bank portal</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-title">2.4 Notification Channel Enum</h3>
+  <table>
+    <thead>
+      <tr><th>Value</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>email</td><td>Email notification via SMTP/SES</td></tr>
+      <tr><td>sms</td><td>SMS via gateway (e.g., MSG91, Twilio)</td></tr>
+      <tr><td>whatsapp</td><td>WhatsApp notification</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     3. AUTHENTICATION
+══════════════════════════════════════════════════════════ -->
+<div class="section section-break" id="auth">
+  <h2 class="section-title">3. Authentication &amp; Authorization</h2>
+
+  <div class="info-box note">
+    <div class="icon">ℹ️</div>
+    <div class="text">
+      <strong>Dual Authentication Model</strong>
+      Merchant APIs require JWT Bearer token. Customer checkout APIs are <strong>public (unauthenticated)</strong>
+      — the <code>linkId</code> acts as an access token for the specific payment session.
+    </div>
+  </div>
+
+  <h3 class="sub-title">Merchant API Auth (Dashboard)</h3>
+  <pre>Authorization: Bearer &lt;JWT_ACCESS_TOKEN&gt;
+Content-Type: application/json</pre>
+
+  <h3 class="sub-title">Customer / Checkout API Auth</h3>
+  <p>No Authorization header required. The <code>linkId</code> in the URL path is the sole identifier.</p>
+
+  <div class="info-box warn">
+    <div class="icon">⚠️</div>
+    <div class="text">
+      <strong>Rate Limiting Required</strong>
+      Customer-facing endpoints must be rate-limited per IP to prevent brute-force link enumeration.
+      Recommended: 30 requests / minute per IP for GET, 5 requests / minute per IP for POST (payment initiation).
+    </div>
+  </div>
+
+  <h3 class="sub-title">Existing Auth Used by Frontend</h3>
+  <p>The frontend also sends <strong>Basic Auth</strong> on the legacy <code>initiate-payin-payment</code> endpoint.</p>
+  <pre>Authorization: Basic &lt;base64(username:password)&gt;</pre>
+  <p>New endpoints should migrate to JWT Bearer only.</p>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     4. MERCHANT APIs
+══════════════════════════════════════════════════════════ -->
+<div class="section section-break" id="merchant-apis">
+  <h2 class="section-title">4. Merchant APIs — Payment Link Management</h2>
+
+  <!-- 4.1 Create -->
+  <h3 class="sub-title">4.1 Create Payment Link</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="badge post">POST</span>
+      <span class="url">/payment-links</span>
+      <span class="badge auth">Auth: JWT</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Creates a new payment link and optionally sends notification to the customer.</p>
+
+      <h4 class="sub-sub-title">Request Body</h4>
+      <pre>{
+  <span class="key">"amount"</span>: <span class="number">1500.00</span>,               <span class="comment">// Required. Amount in INR (positive decimal)</span>
+  <span class="key">"name"</span>: <span class="string">"Rahul Sharma"</span>,         <span class="comment">// Optional. Customer name</span>
+  <span class="key">"email"</span>: <span class="string">"rahul@example.com"</span>,   <span class="comment">// Required. Customer email</span>
+  <span class="key">"mobile"</span>: <span class="string">"9876543210"</span>,        <span class="comment">// Required. 10-digit mobile number</span>
+  <span class="key">"expiresInMinutes"</span>: <span class="number">1440</span>,      <span class="comment">// Required. Expiry from now in minutes (e.g. 1440 = 24h)</span>
+  <span class="key">"notifyEmail"</span>: <span class="bool">true</span>,           <span class="comment">// Optional. Send email to customer</span>
+  <span class="key">"notifyNumber"</span>: <span class="bool">true</span>,          <span class="comment">// Optional. Send SMS to customer</span>
+  <span class="key">"description"</span>: <span class="string">"Invoice #1042"</span>,  <span class="comment">// Optional. Order note (max 500 chars)</span>
+  <span class="key">"allowPartialPayment"</span>: <span class="bool">false</span>,   <span class="comment">// Optional. Allow paying less than amount</span>
+  <span class="key">"minimumAmount"</span>: <span class="number">500.00</span>,       <span class="comment">// Optional. Required if allowPartialPayment=true</span>
+  <span class="key">"thankYouMessage"</span>: <span class="string">"Thank you for your payment!"</span>  <span class="comment">// Optional. Max 200 chars</span>
+}</pre>
+
+      <h4 class="sub-sub-title">Success Response — 201 Created</h4>
+      <pre>{
+  <span class="key">"success"</span>: <span class="bool">true</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"linkId"</span>: <span class="string">"lnk_a1b2c3d4e5f6"</span>,
+    <span class="key">"linkUrl"</span>: <span class="string">"https://pay.rupeeflow.com/payment-link/lnk_a1b2c3d4e5f6"</span>,
+    <span class="key">"expiryTime"</span>: <span class="string">"2026-03-23T10:30:00.000Z"</span>,
+    <span class="key">"amount"</span>: <span class="number">1500.00</span>,
+    <span class="key">"status"</span>: <span class="string">"pending"</span>
+  }
+}</pre>
+
+      <h4 class="sub-sub-title">Validation Rules</h4>
+      <table>
+        <thead><tr><th>Field</th><th>Rule</th></tr></thead>
+        <tbody>
+          <tr><td>amount</td><td>Required, &gt; 0, max 2 decimal places, max ₹5,00,000 per link</td></tr>
+          <tr><td>email</td><td>Required, valid RFC email format</td></tr>
+          <tr><td>mobile</td><td>Required, exactly 10 digits, must start with 6–9</td></tr>
+          <tr><td>expiresInMinutes</td><td>Required, &gt; 0, max 43200 (30 days)</td></tr>
+          <tr><td>minimumAmount</td><td>Required if allowPartialPayment=true, &gt; 0, &lt; amount</td></tr>
+          <tr><td>thankYouMessage</td><td>Optional, max 200 characters</td></tr>
+          <tr><td>description</td><td>Optional, max 500 characters</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4.2 List Links -->
+  <h3 class="sub-title">4.2 List Payment Links</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="badge get">GET</span>
+      <span class="url">/payment-links</span>
+      <span class="badge auth">Auth: JWT</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Returns paginated list of payment links for the authenticated merchant.</p>
+
+      <h4 class="sub-sub-title">Query Parameters</h4>
+      <table>
+        <thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>page</td><td>number</td><td>1</td><td>Page number (1-indexed)</td></tr>
+          <tr><td>limit</td><td>number</td><td>10</td><td>Items per page (max 100)</td></tr>
+          <tr><td>search</td><td>string</td><td>—</td><td>Search by name, email, mobile, or linkId</td></tr>
+          <tr><td>status</td><td>enum</td><td>—</td><td>Filter by status: pending | success | failed | expired</td></tr>
+          <tr><td>startDate</td><td>ISO date</td><td>—</td><td>Filter by creation date (from)</td></tr>
+          <tr><td>endDate</td><td>ISO date</td><td>—</td><td>Filter by creation date (to)</td></tr>
+        </tbody>
+      </table>
+
+      <h4 class="sub-sub-title">Success Response — 200 OK</h4>
+      <pre>{
+  <span class="key">"success"</span>: <span class="bool">true</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"items"</span>: [
+      {
+        <span class="key">"id"</span>: <span class="string">"lnk_a1b2c3d4e5f6"</span>,
+        <span class="key">"amount"</span>: <span class="number">1500.00</span>,
+        <span class="key">"name"</span>: <span class="string">"Rahul Sharma"</span>,
+        <span class="key">"email"</span>: <span class="string">"rahul@example.com"</span>,
+        <span class="key">"mobile"</span>: <span class="string">"9876543210"</span>,
+        <span class="key">"status"</span>: <span class="string">"pending"</span>,
+        <span class="key">"expiresAt"</span>: <span class="string">"2026-03-23T10:30:00.000Z"</span>,
+        <span class="key">"createdAt"</span>: <span class="string">"2026-03-22T10:30:00.000Z"</span>,
+        <span class="key">"linkUrl"</span>: <span class="string">"https://pay.rupeeflow.com/payment-link/lnk_a1b2c3d4e5f6"</span>,
+        <span class="key">"description"</span>: <span class="string">"Invoice #1042"</span>,
+        <span class="key">"txnRefId"</span>: <span class="bool">null</span>
+      }
+    ],
+    <span class="key">"pagination"</span>: {
+      <span class="key">"total"</span>: <span class="number">142</span>,
+      <span class="key">"page"</span>: <span class="number">1</span>,
+      <span class="key">"limit"</span>: <span class="number">10</span>,
+      <span class="key">"totalPages"</span>: <span class="number">15</span>
+    }
+  }
+}</pre>
+    </div>
+  </div>
+
+  <!-- 4.3 Get by ID -->
+  <h3 class="sub-title">4.3 Get Payment Link by ID</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="badge get">GET</span>
+      <span class="url">/payment-links/:linkId</span>
+      <span class="badge auth">Auth: JWT (merchant) or Public (customer)</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Returns full details for a single payment link. Used by both the merchant dashboard and the customer checkout page.</p>
+      <div class="info-box warn">
+        <div class="icon">⚠️</div>
+        <div class="text">
+          <strong>Dual-use endpoint</strong>
+          When called without auth token (customer checkout), mask sensitive merchant data (merchant's full account details, internal IDs, etc.). Return only fields required for checkout.
+        </div>
+      </div>
+
+      <h4 class="sub-sub-title">Success Response — 200 OK</h4>
+      <pre>{
+  <span class="key">"success"</span>: <span class="bool">true</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"id"</span>: <span class="string">"lnk_a1b2c3d4e5f6"</span>,
+    <span class="key">"amount"</span>: <span class="number">1500.00</span>,
+    <span class="key">"name"</span>: <span class="string">"Rahul Sharma"</span>,
+    <span class="key">"email"</span>: <span class="string">"rahul@example.com"</span>,
+    <span class="key">"mobile"</span>: <span class="string">"9876543210"</span>,
+    <span class="key">"status"</span>: <span class="string">"pending"</span>,
+    <span class="key">"expiresAt"</span>: <span class="string">"2026-03-23T10:30:00.000Z"</span>,
+    <span class="key">"createdAt"</span>: <span class="string">"2026-03-22T10:30:00.000Z"</span>,
+    <span class="key">"description"</span>: <span class="string">"Invoice #1042"</span>,
+    <span class="key">"allowPartialPayment"</span>: <span class="bool">false</span>,
+    <span class="key">"minimumAmount"</span>: <span class="bool">null</span>,
+    <span class="key">"thankYouMessage"</span>: <span class="string">"Thank you for shopping with us!"</span>,
+    <span class="key">"txnRefId"</span>: <span class="bool">null</span>,
+    <span class="key">"orderId"</span>: <span class="bool">null</span>,
+    <span class="key">"user"</span>: {
+      <span class="key">"id"</span>: <span class="string">"usr_merchant123"</span>,
+      <span class="key">"fullName"</span>: <span class="string">"Acme Pvt Ltd"</span>
+    }
+  }
+}</pre>
+    </div>
+  </div>
+
+  <!-- 4.4 Cancel Link -->
+  <h3 class="sub-title">4.4 Cancel / Deactivate Payment Link</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="badge patch">PATCH</span>
+      <span class="url">/payment-links/:linkId/cancel</span>
+      <span class="badge auth">Auth: JWT</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Merchant cancels a pending payment link before expiry. Sets status to <code>cancelled</code>.</p>
+      <h4 class="sub-sub-title">Success Response — 200 OK</h4>
+      <pre>{ <span class="key">"success"</span>: <span class="bool">true</span>, <span class="key">"message"</span>: <span class="string">"Payment link cancelled successfully."</span> }</pre>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     5. CHECKOUT APIs
+══════════════════════════════════════════════════════════ -->
+<div class="section section-break" id="checkout-apis">
+  <h2 class="section-title">5. Customer Checkout APIs</h2>
+
+  <div class="info-box good">
+    <div class="icon">✅</div>
+    <div class="text">
+      <strong>Public endpoints — No authentication required</strong>
+      These endpoints are called by the customer-facing checkout page at <code>/payment-link/[linkId]</code>.
+    </div>
+  </div>
+
+  <!-- 5.1 Get Link Details for Checkout -->
+  <h3 class="sub-title">5.1 Get Payment Link Details (Checkout)</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="badge get">GET</span>
+      <span class="url">/payment-link-details/:linkId</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Fetches payment link details for the customer checkout page. Returns only customer-facing fields.</p>
+      <div class="info-box note">
+        <div class="icon">ℹ️</div>
+        <div class="text">This is different from the merchant endpoint <code>/payment-links/:id</code>. It should return a minimal response scoped to what the customer needs to see.</div>
+      </div>
+
+      <h4 class="sub-sub-title">Response Fields Needed by Checkout UI</h4>
+      <pre>{
+  <span class="key">"success"</span>: <span class="bool">true</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"id"</span>: <span class="string">"lnk_a1b2c3d4e5f6"</span>,
+    <span class="key">"amount"</span>: <span class="number">1500.00</span>,
+    <span class="key">"name"</span>: <span class="string">"Rahul Sharma"</span>,            <span class="comment">// Pre-filled customer name</span>
+    <span class="key">"email"</span>: <span class="string">"rahul@example.com"</span>,
+    <span class="key">"mobile"</span>: <span class="string">"9876543210"</span>,
+    <span class="key">"status"</span>: <span class="string">"pending"</span>,               <span class="comment">// pending | success | paid | expired | failed</span>
+    <span class="key">"expiresAt"</span>: <span class="string">"2026-03-23T10:30:00.000Z"</span>,
+    <span class="key">"description"</span>: <span class="string">"Invoice #1042"</span>,
+    <span class="key">"allowPartialPayment"</span>: <span class="bool">false</span>,
+    <span class="key">"minimumAmount"</span>: <span class="bool">null</span>,
+    <span class="key">"thankYouMessage"</span>: <span class="string">"Thank you for your order!"</span>,
+    <span class="key">"orderId"</span>: <span class="string">"ORD-10042"</span>,
+    <span class="key">"txnRefId"</span>: <span class="bool">null</span>,                   <span class="comment">// Populated after successful payment</span>
+    <span class="key">"merchant"</span>: {
+      <span class="key">"name"</span>: <span class="string">"Acme Pvt Ltd"</span>,           <span class="comment">// Shown in success screen avatar</span>
+      <span class="key">"logo"</span>: <span class="string">"https://cdn.rupeeflow.com/logos/acme.png"</span>  <span class="comment">// Optional</span>
+    }
+  }
+}</pre>
+
+      <h4 class="sub-sub-title">Status-specific Responses</h4>
+      <table>
+        <thead><tr><th>Status</th><th>HTTP Code</th><th>UI Behavior</th></tr></thead>
+        <tbody>
+          <tr><td>pending</td><td>200</td><td>Show payment methods</td></tr>
+          <tr><td>success / paid</td><td>200</td><td>Show "Already Paid" screen</td></tr>
+          <tr><td>expired</td><td>200</td><td>Show "Link Expired" screen</td></tr>
+          <tr><td>failed</td><td>200</td><td>Show error + allow retry (TBD)</td></tr>
+          <tr><td>Not Found</td><td>404</td><td>Show "Invalid Link" screen</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     6. PAYMENT INITIATION APIs
+══════════════════════════════════════════════════════════ -->
+<div class="section section-break" id="payment-apis">
+  <h2 class="section-title">6. Payment Initiation APIs</h2>
+
+  <div class="info-box note">
+    <div class="icon">ℹ️</div>
+    <div class="text">
+      <strong>Payment Gateway Integration</strong>
+      These endpoints bridge the frontend checkout with the payment gateway (e.g., Razorpay, Cashfree, PayU, Juspay).
+      The frontend sends payment details, the backend initiates with the gateway, and returns the required redirect / intent / session data.
+    </div>
+  </div>
+
+  <!-- 6.1 Initiate Payment -->
+  <h3 class="sub-title">6.1 Initiate Payment</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="badge post">POST</span>
+      <span class="url">/payment-links/:linkId/initiate</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Initiates payment for a given payment link. Called when customer clicks "Pay Now" for any method.</p>
+
+      <h4 class="sub-sub-title">Request Body</h4>
+      <pre>{
+  <span class="key">"paymentMethod"</span>: <span class="string">"upi"</span>,          <span class="comment">// Required: qr | upi | card | netbanking</span>
+  <span class="key">"amountToPay"</span>: <span class="number">1500.00</span>,         <span class="comment">// Required: actual amount (may differ if partial)</span>
+
+  <span class="comment">// ── UPI-specific fields ──────────────────────────────</span>
+  <span class="key">"upiId"</span>: <span class="string">"rahul@paytm"</span>,          <span class="comment">// Required for method=upi</span>
+  <span class="key">"upiApp"</span>: <span class="string">"phonepe"</span>,             <span class="comment">// Optional: phonepe | gpay | paytm | bhim | amazonpay | cred</span>
+
+  <span class="comment">// ── Card-specific fields ─────────────────────────────</span>
+  <span class="key">"card"</span>: {
+    <span class="key">"number"</span>: <span class="string">"4111111111111111"</span>,   <span class="comment">// 16-digit card number</span>
+    <span class="key">"name"</span>: <span class="string">"Rahul Sharma"</span>,      <span class="comment">// Cardholder name</span>
+    <span class="key">"expiry"</span>: <span class="string">"12/27"</span>,            <span class="comment">// MM/YY</span>
+    <span class="key">"cvv"</span>: <span class="string">"***"</span>                 <span class="comment">// 3-4 digits (never log/store in plain text)</span>
+  },
+
+  <span class="comment">// ── Net Banking-specific fields ──────────────────────</span>
+  <span class="key">"bankCode"</span>: <span class="string">"HDFC"</span>               <span class="comment">// Required for method=netbanking</span>
+}</pre>
+
+      <h4 class="sub-sub-title">Success Response — 200 OK (UPI/QR)</h4>
+      <pre>{
+  <span class="key">"success"</span>: <span class="bool">true</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"transactionId"</span>: <span class="string">"txn_xyz123"</span>,
+    <span class="key">"status"</span>: <span class="string">"processing"</span>,
+    <span class="key">"upiIntent"</span>: <span class="string">"upi://pay?pa=merchant@upi&amp;pn=Acme&amp;am=1500&amp;tn=INV1042"</span>,
+    <span class="key">"qrCodeUrl"</span>: <span class="string">"https://cdn.rupeeflow.com/qr/lnk_a1b2c3d4e5f6.png"</span>,
+    <span class="key">"pollingIntervalMs"</span>: <span class="number">3000</span>   <span class="comment">// Suggested interval for status polling</span>
+  }
+}</pre>
+
+      <h4 class="sub-sub-title">Success Response — 200 OK (Card / Net Banking)</h4>
+      <pre>{
+  <span class="key">"success"</span>: <span class="bool">true</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"transactionId"</span>: <span class="string">"txn_xyz123"</span>,
+    <span class="key">"status"</span>: <span class="string">"processing"</span>,
+    <span class="key">"redirectUrl"</span>: <span class="string">"https://bank.example.com/3ds?session=abc"</span>,
+    <span class="key">"redirectMethod"</span>: <span class="string">"GET"</span>   <span class="comment">// GET or POST</span>
+  }
+}</pre>
+
+      <div class="info-box crit">
+        <div class="icon">🔒</div>
+        <div class="text">
+          <strong>Security — Card Data</strong>
+          Card details must NEVER be stored in plain text. Process card data through a PCI-DSS compliant gateway. Tokenize immediately on receipt. Consider using the gateway's JS SDK to directly tokenize on the frontend without card data ever reaching your servers.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6.2 Check Payment Status -->
+  <h3 class="sub-title">6.2 Check Payment Status</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="badge get">GET</span>
+      <span class="url">/payment-links/:linkId/status</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Polls for the current payment status. Used by frontend after initiating UPI/QR payment.</p>
+
+      <h4 class="sub-sub-title">Response — 200 OK</h4>
+      <pre>{
+  <span class="key">"success"</span>: <span class="bool">true</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"status"</span>: <span class="string">"success"</span>,               <span class="comment">// processing | success | failed</span>
+    <span class="key">"txnRefId"</span>: <span class="string">"TXN20260322ABC123"</span>,  <span class="comment">// Set when success/failed</span>
+    <span class="key">"amountPaid"</span>: <span class="number">1500.00</span>,
+    <span class="key">"paidAt"</span>: <span class="string">"2026-03-22T11:00:00.000Z"</span>
+  }
+}</pre>
+    </div>
+  </div>
+
+  <!-- 6.3 Generate QR -->
+  <h3 class="sub-title">6.3 Generate QR Code for Link</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="badge get">GET</span>
+      <span class="url">/payment-links/:linkId/qr</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Returns a UPI QR code image URL (or base64) for the given payment link. Used on the QR tab of checkout and in the merchant success modal.</p>
+      <h4 class="sub-sub-title">Response — 200 OK</h4>
+      <pre>{
+  <span class="key">"success"</span>: <span class="bool">true</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"qrImageUrl"</span>: <span class="string">"https://cdn.rupeeflow.com/qr/lnk_a1b2c3.png"</span>,
+    <span class="key">"upiString"</span>: <span class="string">"upi://pay?pa=rupeeflow@upi&amp;pn=Acme&amp;am=1500&amp;tn=INV1042"</span>,
+    <span class="key">"expiresAt"</span>: <span class="string">"2026-03-23T10:30:00.000Z"</span>
+  }
+}</pre>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     7. ANALYTICS & REMINDERS APIs
+══════════════════════════════════════════════════════════ -->
+<div class="section section-break" id="analytics-apis">
+  <h2 class="section-title">7. Analytics &amp; Reminder APIs</h2>
+
+  <!-- 7.1 Link Analytics -->
+  <h3 class="sub-title">7.1 Get Link Analytics</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="badge get">GET</span>
+      <span class="url">/payment-links/:linkId/analytics</span>
+      <span class="badge auth">Auth: JWT</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Returns detailed analytics for a single payment link. Drives the <strong>LinkAnalyticsDrawer</strong> in the merchant dashboard.</p>
+
+      <h4 class="sub-sub-title">Response — 200 OK</h4>
+      <pre>{
+  <span class="key">"success"</span>: <span class="bool">true</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"summary"</span>: {
+      <span class="key">"totalOpens"</span>: <span class="number">47</span>,
+      <span class="key">"totalPaid"</span>: <span class="number">3</span>,
+      <span class="key">"conversionRate"</span>: <span class="number">6.38</span>,       <span class="comment">// percentage</span>
+      <span class="key">"topCity"</span>: <span class="string">"Mumbai"</span>,
+      <span class="key">"peakHour"</span>: <span class="number">14</span>                  <span class="comment">// 0-23 (2 PM)</span>
+    },
+    <span class="key">"cityBreakdown"</span>: [
+      { <span class="key">"city"</span>: <span class="string">"Mumbai"</span>,    <span class="key">"opens"</span>: <span class="number">18</span>, <span class="key">"paid"</span>: <span class="number">2</span> },
+      { <span class="key">"city"</span>: <span class="string">"Delhi"</span>,     <span class="key">"opens"</span>: <span class="number">12</span>, <span class="key">"paid"</span>: <span class="number">1</span> },
+      { <span class="key">"city"</span>: <span class="string">"Bengaluru"</span>, <span class="key">"opens"</span>: <span class="number">9</span>,  <span class="key">"paid"</span>: <span class="number">0</span> }
+    ],
+    <span class="key">"hourlyActivity"</span>: [
+      { <span class="key">"hour"</span>: <span class="number">9</span>,  <span class="key">"opens"</span>: <span class="number">5</span>  },
+      { <span class="key">"hour"</span>: <span class="number">10</span>, <span class="key">"opens"</span>: <span class="number">8</span>  },
+      { <span class="key">"hour"</span>: <span class="number">14</span>, <span class="key">"opens"</span>: <span class="number">12</span> }
+    ],
+    <span class="key">"recentActivity"</span>: [
+      {
+        <span class="key">"event"</span>: <span class="string">"link_opened"</span>,
+        <span class="key">"city"</span>: <span class="string">"Mumbai"</span>,
+        <span class="key">"timestamp"</span>: <span class="string">"2026-03-22T14:05:00.000Z"</span>,
+        <span class="key">"device"</span>: <span class="string">"mobile"</span>
+      }
+    ]
+  }
+}</pre>
+    </div>
+  </div>
+
+  <!-- 7.2 List Reminders -->
+  <h3 class="sub-title">7.2 Get Reminders for Link</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="badge get">GET</span>
+      <span class="url">/payment-links/:linkId/reminders</span>
+      <span class="badge auth">Auth: JWT</span>
+    </div>
+    <div class="endpoint-body">
+      <h4 class="sub-sub-title">Response — 200 OK</h4>
+      <pre>{
+  <span class="key">"success"</span>: <span class="bool">true</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"autoRemindersEnabled"</span>: <span class="bool">true</span>,
+    <span class="key">"reminders"</span>: [
+      {
+        <span class="key">"id"</span>: <span class="string">"rem_001"</span>,
+        <span class="key">"channel"</span>: <span class="string">"whatsapp"</span>,       <span class="comment">// whatsapp | sms | email</span>
+        <span class="key">"sentAt"</span>: <span class="string">"2026-03-22T12:00:00.000Z"</span>,
+        <span class="key">"status"</span>: <span class="string">"delivered"</span>        <span class="comment">// sent | delivered | failed</span>
+      }
+    ]
+  }
+}</pre>
+    </div>
+  </div>
+
+  <!-- 7.3 Send Reminder -->
+  <h3 class="sub-title">7.3 Send Manual Reminder</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="badge post">POST</span>
+      <span class="url">/payment-links/:linkId/reminders/send</span>
+      <span class="badge auth">Auth: JWT</span>
+    </div>
+    <div class="endpoint-body">
+      <h4 class="sub-sub-title">Request Body</h4>
+      <pre>{ <span class="key">"channel"</span>: <span class="string">"whatsapp"</span> }   <span class="comment">// whatsapp | sms | email</span></pre>
+      <h4 class="sub-sub-title">Response — 200 OK</h4>
+      <pre>{ <span class="key">"success"</span>: <span class="bool">true</span>, <span class="key">"message"</span>: <span class="string">"Reminder sent via WhatsApp"</span> }</pre>
+    </div>
+  </div>
+
+  <!-- 7.4 Toggle Auto Reminders -->
+  <h3 class="sub-title">7.4 Toggle Auto Reminders</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="badge patch">PATCH</span>
+      <span class="url">/payment-links/:linkId/reminders/auto</span>
+      <span class="badge auth">Auth: JWT</span>
+    </div>
+    <div class="endpoint-body">
+      <h4 class="sub-sub-title">Request Body</h4>
+      <pre>{ <span class="key">"enabled"</span>: <span class="bool">true</span> }</pre>
+      <p>When enabled, automatically sends a reminder via the customer's preferred channel if the link is unpaid after 24 hours.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     8. WEBHOOKS
+══════════════════════════════════════════════════════════ -->
+<div class="section section-break" id="webhooks">
+  <h2 class="section-title">8. Webhooks &amp; Callbacks</h2>
+
+  <div class="info-box note">
+    <div class="icon">ℹ️</div>
+    <div class="text">
+      <strong>Payment Gateway Callback</strong>
+      The backend must expose a webhook endpoint for the payment gateway to POST the final payment result.
+      This is how the <code>status</code> of a payment link gets updated from <code>processing</code> to <code>success</code> or <code>failed</code>.
+    </div>
+  </div>
+
+  <!-- 8.1 Payment Gateway Webhook -->
+  <h3 class="sub-title">8.1 Payment Gateway Webhook (Inbound)</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="badge post">POST</span>
+      <span class="url">/webhooks/payment-gateway</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Received from payment gateway after payment completion.</p>
+      <div class="info-box crit">
+        <div class="icon">🔒</div>
+        <div class="text">
+          <strong>Verify webhook signatures</strong> — validate HMAC-SHA256 signature from gateway before processing. Reject requests with invalid or missing signatures.
+        </div>
+      </div>
+      <h4 class="sub-sub-title">Expected Processing Steps</h4>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="step-num">1</div>
+          <div class="step-content"><strong>Verify signature</strong><span>Validate HMAC or RSA signature in headers</span></div>
+        </div>
+        <div class="flow-connector">↓</div>
+        <div class="flow-step">
+          <div class="step-num">2</div>
+          <div class="step-content"><strong>Extract linkId &amp; txnRefId</strong><span>From webhook payload</span></div>
+        </div>
+        <div class="flow-connector">↓</div>
+        <div class="flow-step">
+          <div class="step-num">3</div>
+          <div class="step-content"><strong>Update PaymentLink status</strong><span>Set to success/failed, store txnRefId, amountPaid, paidAt</span></div>
+        </div>
+        <div class="flow-connector">↓</div>
+        <div class="flow-step">
+          <div class="step-num">4</div>
+          <div class="step-content"><strong>Send notifications</strong><span>Email/SMS confirmation to customer; alert to merchant</span></div>
+        </div>
+        <div class="flow-connector">↓</div>
+        <div class="flow-step">
+          <div class="step-num">5</div>
+          <div class="step-content"><strong>Return 200 OK</strong><span>Acknowledge receipt to prevent retry by gateway</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     9. ENCRYPTION
+══════════════════════════════════════════════════════════ -->
+<div class="section section-break" id="encryption">
+  <h2 class="section-title">9. Encryption &amp; Security</h2>
+
+  <h3 class="sub-title">9.1 Payload Encryption (AES-256-GCM)</h3>
+  <p>
+    The frontend uses <strong>AES-256-GCM</strong> encryption for sensitive fields passed in URLs or
+    session tokens. The backend must implement matching decryption.
+  </p>
+
+  <h4 class="sub-sub-title">Algorithm Details</h4>
+  <table>
+    <thead><tr><th>Property</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Algorithm</td><td>AES-256-GCM</td></tr>
+      <tr><td>Key Length</td><td>256-bit (32 bytes)</td></tr>
+      <tr><td>IV Length</td><td>12 bytes (random per encryption)</td></tr>
+      <tr><td>Auth Tag Length</td><td>16 bytes</td></tr>
+      <tr><td>Output Format</td><td>Base64 encoded: <code>iv(12) + authTag(16) + ciphertext</code></td></tr>
+      <tr><td>Key Source</td><td>Shared secret: <code>ENCRYPTION_KEY</code> (32-char string)</td></tr>
+    </tbody>
+  </table>
+
+  <h4 class="sub-sub-title">Encryption / Decryption (Node.js)</h4>
+  <pre><span class="comment">// Decryption — matches frontend encryption.utils.ts</span>
+const crypto = require('crypto');
+
+function decrypt(encryptedBase64, keyString) {
+  const key = Buffer.from(keyString, 'utf8').slice(0, 32);
+  const buffer = Buffer.from(encryptedBase64, 'base64');
+
+  const iv       = buffer.slice(0, 12);
+  const authTag  = buffer.slice(12, 28);
+  const ciphertext = buffer.slice(28);
+
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+  decipher.setAuthTag(authTag);
+
+  const decrypted = Buffer.concat([
+    decipher.update(ciphertext),
+    decipher.final()
+  ]);
+
+  return decrypted.toString('utf8');
+}</pre>
+
+  <h3 class="sub-title">9.2 Additional Security Requirements</h3>
+  <table>
+    <thead><tr><th>Requirement</th><th>Details</th></tr></thead>
+    <tbody>
+      <tr><td>HTTPS Only</td><td>All API endpoints must be served over TLS 1.2+</td></tr>
+      <tr><td>Rate Limiting</td><td>30 req/min (GET), 5 req/min (POST payment) per IP</td></tr>
+      <tr><td>Link ID Entropy</td><td>linkId must be cryptographically random (min 12 bytes = 24 hex chars)</td></tr>
+      <tr><td>Card Data</td><td>Never store card numbers. Use gateway tokenization. PCI-DSS SAQ-A or SAQ-D</td></tr>
+      <tr><td>Webhook Signatures</td><td>Verify HMAC-SHA256 on all inbound gateway webhooks</td></tr>
+      <tr><td>Expiry Enforcement</td><td>Server must reject payment attempts on expired links regardless of client-side checks</td></tr>
+      <tr><td>Idempotency</td><td>POST /payment-links/:id/initiate should be idempotent — accept <code>Idempotency-Key</code> header</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     10. ERROR CODES
+══════════════════════════════════════════════════════════ -->
+<div class="section section-break" id="error-codes">
+  <h2 class="section-title">10. Error Codes &amp; Standard Responses</h2>
+
+  <h3 class="sub-title">Standard Error Response Shape</h3>
+  <pre>{
+  <span class="key">"success"</span>: <span class="bool">false</span>,
+  <span class="key">"error"</span>: {
+    <span class="key">"code"</span>: <span class="string">"PAYMENT_LINK_EXPIRED"</span>,
+    <span class="key">"message"</span>: <span class="string">"This payment link has expired."</span>,
+    <span class="key">"details"</span>: {}   <span class="comment">// Optional extra context</span>
+  }
+}</pre>
+
+  <div class="info-box note">
+    <div class="icon">ℹ️</div>
+    <div class="text">The frontend reads <code>response.data.message</code> and <code>response.data.error</code> to display toast notifications to users. Keep messages user-friendly and actionable.</div>
+  </div>
+
+  <h3 class="sub-title">Application Error Codes</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>HTTP Status</th>
+        <th>Error Code</th>
+        <th>Message (User-facing)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>400</td><td>INVALID_REQUEST</td><td>The request body is invalid or missing required fields.</td></tr>
+      <tr><td>400</td><td>INVALID_AMOUNT</td><td>Amount must be a positive number.</td></tr>
+      <tr><td>400</td><td>INVALID_MOBILE</td><td>Enter a valid 10-digit mobile number.</td></tr>
+      <tr><td>400</td><td>INVALID_UPI_ID</td><td>Enter a valid UPI ID (e.g. name@bank).</td></tr>
+      <tr><td>400</td><td>PARTIAL_PAYMENT_BELOW_MIN</td><td>Amount must be at least ₹{minimumAmount}.</td></tr>
+      <tr><td>401</td><td>UNAUTHORIZED</td><td>Authentication required.</td></tr>
+      <tr><td>403</td><td>FORBIDDEN</td><td>You do not have permission to perform this action.</td></tr>
+      <tr><td>404</td><td>PAYMENT_LINK_NOT_FOUND</td><td>This payment link does not exist.</td></tr>
+      <tr><td>409</td><td>PAYMENT_LINK_EXPIRED</td><td>This payment link has expired.</td></tr>
+      <tr><td>409</td><td>PAYMENT_LINK_ALREADY_PAID</td><td>Payment for this link has already been completed.</td></tr>
+      <tr><td>409</td><td>PAYMENT_LINK_CANCELLED</td><td>This payment link has been cancelled by the merchant.</td></tr>
+      <tr><td>422</td><td>PAYMENT_FAILED</td><td>Payment could not be processed. Please try again.</td></tr>
+      <tr><td>429</td><td>RATE_LIMIT_EXCEEDED</td><td>Too many requests. Please wait and try again.</td></tr>
+      <tr><td>500</td><td>INTERNAL_ERROR</td><td>Something went wrong. Please try again later.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     11. FLOW WALKTHROUGHS
+══════════════════════════════════════════════════════════ -->
+<div class="section section-break" id="flows">
+  <h2 class="section-title">11. Complete Flow Walkthroughs</h2>
+
+  <h3 class="sub-title">Flow A — Merchant Creates a Payment Link</h3>
+  <div class="flow">
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Merchant opens dashboard</strong>
+        <span>Calls <code>GET /payment-links?page=1&amp;limit=10</code> to load existing links</span>
+      </div>
+    </div>
+    <div class="flow-connector">↓</div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Merchant fills Create Link form</strong>
+        <span>Fields: amount, email, mobile, name, expiry, description, notifications, partial payment, thank you message</span>
+      </div>
+    </div>
+    <div class="flow-connector">↓</div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Frontend submits</strong>
+        <span>Calls <code>POST /payment-links</code> with full payload</span>
+      </div>
+    </div>
+    <div class="flow-connector">↓</div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Backend creates link</strong>
+        <span>Generates <code>linkId</code>, stores in DB, sends email/SMS if requested, returns <code>{ linkId, linkUrl, expiryTime }</code></span>
+      </div>
+    </div>
+    <div class="flow-connector">↓</div>
+    <div class="flow-step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <strong>Frontend shows success modal</strong>
+        <span>Merchant copies/shares link. QR generated via <code>GET /payment-links/:id/qr</code></span>
+      </div>
+    </div>
+  </div>
+
+  <hr/>
+
+  <h3 class="sub-title">Flow B — Customer Completes Payment (UPI)</h3>
+  <div class="flow">
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Customer opens link</strong>
+        <span><code>GET /payment-link-details/{linkId}</code> — check status, show checkout if pending</span>
+      </div>
+    </div>
+    <div class="flow-connector">↓</div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Customer selects UPI tab</strong>
+        <span>Enters UPI ID and clicks Pay</span>
+      </div>
+    </div>
+    <div class="flow-connector">↓</div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Frontend initiates payment</strong>
+        <span><code>POST /payment-links/{linkId}/initiate</code> with <code>{ paymentMethod: "upi", upiId, amountToPay }</code></span>
+      </div>
+    </div>
+    <div class="flow-connector">↓</div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Backend sends collect request to UPI gateway</strong>
+        <span>Marks link as <code>processing</code>, returns <code>transactionId</code></span>
+      </div>
+    </div>
+    <div class="flow-connector">↓</div>
+    <div class="flow-step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <strong>Frontend polls for status</strong>
+        <span><code>GET /payment-links/{linkId}/status</code> every 3 seconds (up to 5 minutes)</span>
+      </div>
+    </div>
+    <div class="flow-connector">↓</div>
+    <div class="flow-step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <strong>Gateway webhook received</strong>
+        <span>Backend updates link to <code>success</code>, stores <code>txnRefId</code></span>
+      </div>
+    </div>
+    <div class="flow-connector">↓</div>
+    <div class="flow-step">
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <strong>Polling gets success</strong>
+        <span>Frontend shows success screen with thank you message, txnRefId, merchant name</span>
+      </div>
+    </div>
+  </div>
+
+  <hr/>
+
+  <h3 class="sub-title">Flow C — Customer Completes Partial Payment</h3>
+  <div class="flow">
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Link loaded</strong>
+        <span>Response has <code>allowPartialPayment: true</code> and <code>minimumAmount: 500</code>, total <code>amount: 2000</code></span>
+      </div>
+    </div>
+    <div class="flow-connector">↓</div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Customer selects "Pay Custom Amount"</strong>
+        <span>Frontend validates: 500 ≤ customAmount ≤ 2000</span>
+      </div>
+    </div>
+    <div class="flow-connector">↓</div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Payment initiated with custom amount</strong>
+        <span><code>POST /payment-links/{linkId}/initiate</code> with <code>amountToPay: 800</code></span>
+      </div>
+    </div>
+    <div class="flow-connector">↓</div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Backend records partial payment</strong>
+        <span>Status becomes <code>success</code>. Remaining balance <code>1200</code> should be tracked (TBD: create new link or mark partial)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     12. SUGGESTED ENHANCEMENTS
+══════════════════════════════════════════════════════════ -->
+<div class="section" id="enhancements">
+  <h2 class="section-title">12. Suggested Enhancements &amp; Open Questions</h2>
+
+  <h3 class="sub-title">Recommended Backend Features</h3>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Feature</th><th>Priority</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Payment Link Short URL</td><td>High</td><td>Shorten <code>/payment-link/{uuid}</code> for cleaner WhatsApp sharing. Use a slug or nanoid.</td></tr>
+      <tr><td>2</td><td>Bulk Link Creation</td><td>Medium</td><td>Allow uploading a CSV to create multiple links at once.</td></tr>
+      <tr><td>3</td><td>Link Templates</td><td>Medium</td><td>Save link settings as reusable templates (e.g., "Monthly Invoice").</td></tr>
+      <tr><td>4</td><td>Payment Retry Support</td><td>High</td><td>If payment fails, allow customer to retry without a new link. Return a retry token.</td></tr>
+      <tr><td>5</td><td>Multi-party Partial Payments</td><td>Low</td><td>Track cumulative partial payments against a single link (group payment use case).</td></tr>
+      <tr><td>6</td><td>Realtime Status via WebSocket / SSE</td><td>Medium</td><td>Replace polling with WebSocket push when payment status changes — better UX.</td></tr>
+      <tr><td>7</td><td>Invoice PDF attachment</td><td>Low</td><td>Attach a generated invoice PDF to the email notification sent on creation.</td></tr>
+      <tr><td>8</td><td>Refund API</td><td>Medium</td><td>Merchant-initiated refund for completed payments. <code>POST /payment-links/:id/refund</code></td></tr>
+      <tr><td>9</td><td>Embed / Widget Token</td><td>Low</td><td>Generate a signed token for embedding payment widget on external websites.</td></tr>
+      <tr><td>10</td><td>Card Tokenization via Gateway SDK</td><td>High</td><td>Use gateway-provided JS SDK to tokenize cards client-side. Never route raw card data through your servers.</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-title">Open Questions for Backend Team</h3>
+  <div class="card orange-border">
+    <ol style="margin-left:16px;line-height:2.2;">
+      <li>Which payment gateway will be integrated (Razorpay, Cashfree, Juspay, PayU)?</li>
+      <li>Should <code>GET /payment-links/:id</code> be one unified endpoint for both merchant and customer, or two separate endpoints?</li>
+      <li>What should happen after a partial payment — is the link marked done, or do we create a new link for the remaining balance?</li>
+      <li>Are analytics events (opens, views) tracked by the backend, or should the frontend call a separate analytics service?</li>
+      <li>What is the auto-reminder schedule — exactly 24h after creation, or relative to link expiry?</li>
+      <li>Should the merchant be able to edit a pending payment link (change amount, expiry)?</li>
+      <li>Is there a need for a <strong>guest checkout</strong> where the customer fills in their own name/email (for links without pre-filled customer info)?</li>
+      <li>Should <code>linkId</code> be a UUID or a shorter, URL-friendly nanoid (e.g., <code>lnk_Xk3mN9pQ</code>)?</li>
+    </ol>
+  </div>
+
+  <hr/>
+  <p style="color:#6B8A78;font-size:11px;text-align:center;margin-top:40px;">
+    RupeeFlow — Checkout &amp; Payment Link Backend Specification v1.0.0 &nbsp;|&nbsp; Prepared March 2026 &nbsp;|&nbsp; Confidential
+  </p>
+</div>
+
+</div><!-- end page-wrapper -->
+</body>
+</html>

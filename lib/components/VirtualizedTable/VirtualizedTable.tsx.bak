@@ -1,0 +1,268 @@
+'use client';
+
+import React, { useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableColumn,
+  TableRow,
+  TableCell,
+} from '@heroui/react';
+
+export interface VirtualizedTableColumn<T> {
+  key: string;
+  label: string;
+  render?: (item: T, index: number) => React.ReactNode;
+  width?: string;
+  align?: 'start' | 'center' | 'end';
+}
+
+export interface VirtualizedTableProps<T> {
+  data: T[];
+  columns: VirtualizedTableColumn<T>[];
+  rowHeight?: number;
+  overscan?: number;
+  className?: string;
+  onRowClick?: (item: T, index: number) => void;
+  height?: string;
+  emptyContent?: React.ReactNode;
+}
+
+/**
+ * VirtualizedTable - High-performance table component using virtual scrolling
+ *
+ * Only renders visible rows, dramatically improving performance for large datasets.
+ *
+ * @example
+ * ```tsx
+ * const columns = [
+ *   { key: 'id', label: 'ID', width: '150px' },
+ *   {
+ *     key: 'amount',
+ *     label: 'Amount',
+ *     width: '200px',
+ *     render: (txn) => formatCurrency(txn.amount)
+ *   },
+ * ];
+ *
+ * <VirtualizedTable
+ *   data={transactions}
+ *   columns={columns}
+ *   rowHeight={60}
+ *   onRowClick={(txn) => handleClick(txn)}
+ * />
+ * ```
+ */
+export function VirtualizedTable<T extends Record<string, any>>({
+  data,
+  columns,
+  rowHeight = 60,
+  overscan = 5,
+  className = '',
+  onRowClick,
+  height = '600px',
+  emptyContent = 'No data available',
+}: VirtualizedTableProps<T>) {
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: data.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => rowHeight,
+    overscan,
+  });
+
+  const virtualItems = virtualizer.getVirtualItems();
+
+  // Empty state
+  if (data.length === 0) {
+    return (
+      <div
+        className={`flex items-center justify-center p-8 border border-gray-200 dark:border-gray-700 rounded-lg ${className}`}
+        style={{ height }}
+      >
+        <div className="text-gray-500 dark:text-gray-400 text-center">
+          {emptyContent}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={parentRef}
+      className={`overflow-auto border border-gray-200 dark:border-gray-700 rounded-lg ${className}`}
+      style={{ height }}
+    >
+      <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center h-12 px-4 font-semibold text-sm text-gray-700 dark:text-gray-300">
+          {columns.map((column) => (
+            <div
+              key={column.key}
+              style={{
+                width: column.width || 'auto',
+                textAlign: column.align || 'start',
+              }}
+              className="flex-1 px-2"
+            >
+              {column.label}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+          position: 'relative',
+        }}
+      >
+        {virtualItems.map((virtualRow) => {
+          const item = data[virtualRow.index];
+          const isClickable = !!onRowClick;
+
+          return (
+            <div
+              key={virtualRow.key}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: `${virtualRow.size}px`,
+                transform: `translateY(${virtualRow.start}px)`,
+              }}
+              onClick={() => onRowClick?.(item, virtualRow.index)}
+              className={`
+                flex items-center px-4 border-b border-gray-100 dark:border-gray-700
+                ${isClickable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors' : ''}
+              `}
+            >
+              {columns.map((column) => (
+                <div
+                  key={column.key}
+                  style={{
+                    width: column.width || 'auto',
+                    textAlign: column.align || 'start',
+                  }}
+                  className="flex-1 px-2 text-sm text-gray-900 dark:text-gray-100 truncate"
+                >
+                  {column.render
+                    ? column.render(item, virtualRow.index)
+                    : item[column.key]}
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * VirtualizedTableWithNextUI - Alternative implementation using NextUI components
+ *
+ * Use this if you need full NextUI styling and features.
+ * Performance is slightly lower than VirtualizedTable but still much better than regular tables.
+ */
+export function VirtualizedTableWithNextUI<T extends Record<string, any>>({
+  data,
+  columns,
+  rowHeight = 60,
+  overscan = 5,
+  className = '',
+  onRowClick,
+  height = '600px',
+}: VirtualizedTableProps<T>) {
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: data.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => rowHeight,
+    overscan,
+  });
+
+  const virtualItems = virtualizer.getVirtualItems();
+
+  return (
+    <div
+      ref={parentRef}
+      className={`overflow-auto ${className}`}
+      style={{ height }}
+    >
+      <Table
+        removeWrapper
+        aria-label="Virtualized table"
+        classNames={{
+          base: 'max-h-full',
+          table: 'min-h-[400px]',
+        }}
+      >
+        <TableHeader columns={columns}>
+          {(column) => (
+            <TableColumn key={column.key} style={{ width: column.width }}>
+              {column.label}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell colSpan={columns.length} className="p-0">
+              <div
+                style={{
+                  height: `${virtualizer.getTotalSize()}px`,
+                  position: 'relative',
+                }}
+              >
+                {virtualItems.map((virtualRow) => {
+                  const item = data[virtualRow.index];
+                  return (
+                    <div
+                      key={virtualRow.key}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${virtualRow.start}px)`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        borderBottom: '1px solid #e5e7eb',
+                      }}
+                      onClick={() => onRowClick?.(item, virtualRow.index)}
+                      className={
+                        onRowClick
+                          ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800'
+                          : ''
+                      }
+                    >
+                      {columns.map((column) => (
+                        <div
+                          key={column.key}
+                          style={{
+                            width: column.width || 'auto',
+                            padding: '0 12px',
+                          }}
+                          className="flex-1"
+                        >
+                          {column.render
+                            ? column.render(item, virtualRow.index)
+                            : item[column.key]}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
