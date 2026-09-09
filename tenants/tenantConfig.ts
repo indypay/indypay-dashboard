@@ -109,24 +109,24 @@ export const indypayTenant: TenantConfig = {
 
   domains: ['merchant.indypay.in', 'app.indypay.in', 'dashboard.indypay.in'],
   colors: {
-    primary:    '#08B6AE',   // brand teal
-    secondary:  '#055CF5',   // brand blue
-    accent:     '#3D9EFF',
-    background: '#F5FCFB',
+    primary:    '#4F46E5',   // brand teal
+    secondary:  '#7C3AED',   // brand blue
+    accent:     '#2563EB',
+    background: '#F7F7FF',
     surface:    '#FFFFFF',
     text:       '#000000',
-    textMuted:  '#525252',
-    border:     '#C5EEEB',
+    textMuted:  '#64748B',
+    border:     '#E0E7FF',
 
-    sidebarHoverBg:       'rgba(8, 182, 174, 0.06)',
-    sidebarActiveBg:      '#E8FAF9',
-    sidebarActiveBorder:  '#7ED9D4',
-    sidebarActiveText:    '#055CF5',
-    sidebarSubmenuBg:     '#F5FCFB',
-    sidebarSubmenuBorder: 'rgba(8, 182, 174, 0.12)',
-    sidebarSubmenuConnector: 'rgba(5, 92, 245, 0.2)',
-    sidebarIconColor:     '#5C6B73',
-    sidebarSubmenuItemSelected: '#E8FAF9',
+    sidebarHoverBg:       'rgba(79, 70, 229, 0.08)',
+    sidebarActiveBg:      'linear-gradient(135deg, #4F46E5, #7C3AED)',
+    sidebarActiveBorder:  '#818CF8',
+    sidebarActiveText:    '#FFFFFF',
+    sidebarSubmenuBg:     '#F8F7FF',
+    sidebarSubmenuBorder: 'rgba(124, 58, 237, 0.12)',
+    sidebarSubmenuConnector: 'rgba(79, 70, 229, 0.2)',
+    sidebarIconColor:     '#64748B',
+    sidebarSubmenuItemSelected: '#EEF2FF',
   },
   menuLabelOverrides: {
     '/summary/overview': 'Dashboard',
@@ -152,7 +152,7 @@ export const indypayTenant: TenantConfig = {
     '/ums': 'Team Management',
     '/settlement/settlement-transactions': 'Settlements',
   },
-  antdPrimary: '#08B6AE',
+  antdPrimary: '#4F46E5',
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
