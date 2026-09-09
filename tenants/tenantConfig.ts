@@ -279,7 +279,7 @@ export const TENANT_REGISTRY: Record<string, TenantConfig> = {
   [branchxTenant.tenantId]:    branchxTenant,
 };
 
-export const DEFAULT_TENANT_ID = rupeeflowTenant.tenantId;
+export const DEFAULT_TENANT_ID = indypayTenant.tenantId;
 
 // Flat map: hostname → tenantId — built automatically from each tenant's domains array.
 // Add new domains only in the tenant object above; this map stays in sync automatically.
