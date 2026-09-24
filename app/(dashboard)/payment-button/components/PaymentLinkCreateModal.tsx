@@ -25,6 +25,7 @@ import {
 import dayjs, { Dayjs } from 'dayjs';
 import { createStyles } from 'antd-style';
 import { useToast } from '@/lib/components/Toast/ToastContext';
+import { createNewPaymentLink } from '@/lib/services/payment-link-new-service';
 
 const { Panel } = Collapse;
 const { TextArea } = Input;
@@ -134,28 +135,72 @@ export default function PaymentLinkCreateModal({
 
   const handleSubmit = async (values: any) => {
     setLoading(true);
-    try {
-      // Simulate API call - replace with actual API
-      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const link = {
-        id: `link_${Date.now()}`,
-        amount: values.amount,
-        purpose: values.purpose,
-        status: 'active' as const,
-        createdAt: new Date().toISOString(),
-        linkUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/payment-link/${Date.now()}`,
-        views: 0,
-        conversions: 0,
-        expiry: values.expiry,
-        collectCustomerDetails: values.collectCustomerDetails,
-        allowPartialPayment: values.allowPartialPayment,
+    try {
+      const expiresAt = values.expiry
+        ? values.expiry.toISOString()
+        : undefined;
+
+      const payload = {
+        amount: Number(values.amount),
+        name: values.name ? String(values.name).trim() : '',
+        email: values.email ? String(values.email).trim() : '',
+        mobile: values.mobile ? String(values.mobile).trim() : '',
+        note: values.purpose ? String(values.purpose).trim() : undefined,
+        notifyOnEmail: !!values.notifyOnEmail,
+        notifyOnNumber: !!values.notifyOnNumber,
+        expiresAt,
+        allowPartialPayment: !!values.allowPartialPayment,
+        minimumAmount:
+          values.allowPartialPayment && values.minimumAmount != null
+            ? Number(values.minimumAmount)
+            : undefined,
       };
 
-      onSuccess(link);
+      const [response, error] = await createNewPaymentLink(payload);
+
+      if (error || !response) {
+        const message =
+          error?.message || 'Failed to create payment link';
+
+        showToast(message, 'error');
+        return;
+      }
+
+      const linkUrl =
+        response.paymentLinkUrl ||
+        response.linkUrl ||
+        '';
+
+      onSuccess({
+        ...response,
+        id: response.linkId,
+        linkId: response.linkId,
+        linkUrl,
+        paymentLinkUrl: response.paymentLinkUrl || linkUrl,
+        amount: payload.amount,
+        purpose: payload.note,
+        description: payload.note,
+        createdAt: new Date().toISOString(),
+        status: 'pending',
+        expiry: expiresAt,
+        expiresAt: response.expiresAt ?? response.expiryTime ?? expiresAt ?? null,
+        qr: response.qr,
+        whatsappShareUrl: response.whatsappShareUrl,
+        allowPartialPayment: payload.allowPartialPayment,
+        minimumAmount: payload.minimumAmount,
+      });
+
       form.resetFields();
-    } catch (error) {
-      showToast('Failed to create payment link', 'error');
+    } catch (error: any) {
+      console.error('Payment link creation failed:', error);
+
+      showToast(
+        error?.response?.data?.message ||
+          error?.message ||
+          'Failed to create payment link',
+        'error',
+      );
     } finally {
       setLoading(false);
     }
@@ -195,6 +240,54 @@ export default function PaymentLinkCreateModal({
       >
         {/* Required Fields */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <Form.Item
+            name="name"
+            label={
+              <span className="flex items-center gap-2">
+                <UserOutlined style={{ color: 'var(--primary)' }} />
+                Customer Name
+              </span>
+            }
+            rules={[
+              { required: true, message: 'Please enter customer name' },
+            ]}
+          >
+            <Input
+              className={styles.input}
+              placeholder="Enter customer name"
+              size="large"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="email"
+            label="Customer Email"
+            rules={[
+              { required: true, message: 'Please enter customer email' },
+              { type: 'email', message: 'Please enter a valid email' },
+            ]}
+          >
+            <Input
+              className={styles.input}
+              placeholder="customer@example.com"
+              size="large"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="mobile"
+            label="Customer Mobile"
+            rules={[
+              { required: true, message: 'Please enter customer mobile' },
+            ]}
+          >
+            <Input
+              className={styles.input}
+              placeholder="Enter mobile number"
+              size="large"
+            />
+          </Form.Item>
+
           <Form.Item
             name="amount"
             label={
@@ -272,31 +365,7 @@ export default function PaymentLinkCreateModal({
           <div
             style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
           >
-            <Form.Item
-              name="collectCustomerDetails"
-              valuePropName="checked"
-              className="mb-0"
-            >
-              <div
-                className="flex items-center justify-between p-4 rounded-lg border"
-                style={{ background: 'var(--background)', borderColor: 'var(--border)' }}
-              >
-                <div className="flex items-center gap-3">
-                  <UserOutlined
-                    style={{ color: 'var(--primary)', fontSize: '18px' }}
-                  />
-                  <div>
-                    <div className="font-semibold text-primary-dark-green">
-                      Collect Customer Details
-                    </div>
-                    <div className="text-sm text-muted">
-                      Capture name, email, and phone number
-                    </div>
-                  </div>
-                </div>
-                <Switch className={styles.switch} />
-              </div>
-            </Form.Item>
+
 
             <Form.Item
               name="allowPartialPayment"
@@ -343,25 +412,7 @@ export default function PaymentLinkCreateModal({
               key="advanced"
             >
               <div className="space-y-4 pt-2">
-                <Form.Item
-                  name="paymentMethods"
-                  label="Payment Methods"
-                  tooltip="Select which payment methods to accept"
-                >
-                  <Select
-                    mode="multiple"
-                    placeholder="Select payment methods"
-                    className={styles.input}
-                    size="large"
-                    options={[
-                      { label: 'UPI', value: 'upi' },
-                      { label: 'Credit Card', value: 'credit_card' },
-                      { label: 'Debit Card', value: 'debit_card' },
-                      { label: 'Net Banking', value: 'netbanking' },
-                      { label: 'Wallet', value: 'wallet' },
-                    ]}
-                  />
-                </Form.Item>
+
 
                 <Form.Item
                   name="minimumAmount"
@@ -378,29 +429,9 @@ export default function PaymentLinkCreateModal({
                   />
                 </Form.Item>
 
-                <Form.Item
-                  name="redirectUrl"
-                  label="Redirect URL"
-                  tooltip="URL to redirect after successful payment"
-                >
-                  <Input
-                    className={styles.input}
-                    placeholder="https://yourwebsite.com/success"
-                    size="large"
-                  />
-                </Form.Item>
 
-                <Form.Item
-                  name="webhookUrl"
-                  label="Webhook URL"
-                  tooltip="URL to receive payment notifications"
-                >
-                  <Input
-                    className={styles.input}
-                    placeholder="https://yourwebsite.com/webhook"
-                    size="large"
-                  />
-                </Form.Item>
+
+
               </div>
             </Panel>
           </Collapse>

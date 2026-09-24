@@ -114,27 +114,27 @@ export default function PaymentLinkSuccessModal({
   if (!paymentLink) return null;
 
   const handleCopyLink = () => {
-    onCopyLink(paymentLink.linkUrl);
+    onCopyLink((paymentLink.paymentLinkUrl || paymentLink.linkUrl));
   };
 
   const handleShareWhatsApp = () => {
     const amount = paymentLink.amount ? `₹${paymentLink.amount}` : '';
     const note = paymentLink.purpose || paymentLink.description || '';
     const text = note
-      ? `Hi, please pay ${amount} for ${note} here: ${paymentLink.linkUrl} — ${merchantName}`
-      : `Hi, please pay ${amount} here: ${paymentLink.linkUrl} — ${merchantName}`;
+      ? `Hi, please pay ${amount} for ${note} here: ${(paymentLink.paymentLinkUrl || paymentLink.linkUrl)} — ${merchantName}`
+      : `Hi, please pay ${amount} here: ${(paymentLink.paymentLinkUrl || paymentLink.linkUrl)} — ${merchantName}`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(whatsappUrl, '_blank');
     showToast('Opening WhatsApp...', 'success');
   };
 
   const handleCopyEmbedCode = () => {
-    const embedCode = `<iframe src="${paymentLink.linkUrl}" width="100%" height="600" frameborder="0"></iframe>`;
+    const embedCode = `<iframe src="${(paymentLink.paymentLinkUrl || paymentLink.linkUrl)}" width="100%" height="600" frameborder="0"></iframe>`;
     navigator.clipboard.writeText(embedCode);
     showToast('Embed code copied to clipboard', 'success');
   };
 
-  const embedCode = `<iframe src="${paymentLink.linkUrl}" width="100%" height="600" frameborder="0"></iframe>`;
+  const embedCode = `<iframe src="${(paymentLink.paymentLinkUrl || paymentLink.linkUrl)}" width="100%" height="600" frameborder="0"></iframe>`;
 
   return (
     <Modal
@@ -185,7 +185,7 @@ export default function PaymentLinkSuccessModal({
         </label>
         <div className="flex gap-2">
           <Input
-            value={paymentLink.linkUrl}
+            value={(paymentLink.paymentLinkUrl || paymentLink.linkUrl)}
             readOnly
             className={styles.linkInput}
             size="large"
@@ -268,12 +268,24 @@ export default function PaymentLinkSuccessModal({
                 borderRadius: '8px',
               }}
             >
-              <QRCode
-                value={paymentLink.linkUrl}
-                size={200}
-                errorLevel="M"
-                iconSize={40}
-              />
+              {paymentLink.qr ? (
+                <img
+                  src={paymentLink.qr}
+                  alt="Payment QR Code"
+                  style={{
+                    width: 200,
+                    height: 200,
+                    objectFit: 'contain',
+                  }}
+                />
+              ) : (
+                <QRCode
+                  value={(paymentLink.paymentLinkUrl || paymentLink.linkUrl)}
+                  size={200}
+                  errorLevel="M"
+                  iconSize={40}
+                />
+              )}
             </div>
             <p
               style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '12px' }}

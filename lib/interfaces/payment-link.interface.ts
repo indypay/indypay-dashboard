@@ -27,7 +27,15 @@ export interface IPaymentLinkCreateResponse {
   success: boolean;
   linkId: string;
   linkUrl: string;
-  expiryTime: string;
+  /** PNG data URL returned by the backend for QR display. */
+  qr?: string;
+  /** Backend may return this as null when the link never expires. */
+  expiryTime?: string | null;
+  /** Backend response may also expose these fields. */
+  paymentLinkUrl?: string;
+  expiresAt?: string | null;
+  whatsappShareUrl?: string;
+  message?: string;
 }
 
 export interface IPaymentLinkDetails {

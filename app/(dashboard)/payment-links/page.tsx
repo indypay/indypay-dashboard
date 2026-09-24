@@ -259,7 +259,7 @@ export default function PaymentLinkPage() {
       ]);
       setCreatedLink({
         linkUrl: response.linkUrl,
-        expiryTime: response.expiryTime,
+        expiryTime: response.expiryTime ?? '',
         amount: payload.amount,
       });
       setIsCreateModalOpen(false);
